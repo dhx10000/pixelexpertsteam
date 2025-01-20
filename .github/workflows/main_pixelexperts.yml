@@ -1,8 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
 
-name: Build and deploy Python app to Azure Web App - pixelExperts
+name: Build and deploy Node.js app to Azure Web App - PixelExperts
 
 on:
   push:
@@ -12,36 +11,27 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python version
-        uses: actions/setup-python@v5
+      - name: Set up Node.js version
+        uses: actions/setup-node@v3
         with:
-          python-version: '3.9'
+          node-version: '20.x'
 
-      - name: Create and start virtual environment
+      - name: npm install, build, and test
         run: |
-          python -m venv venv
-          source venv/bin/activate
+          npm install
+          npm run build --if-present
+          npm run test --if-present
       
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-        
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
-
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
-
-      - name: Upload artifact for deployment jobs
+      - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: python-app
-          path: |
-            release.zip
-            !venv/
+          name: node-app
+          path: .
 
   deploy:
     runs-on: ubuntu-latest
@@ -56,23 +46,20 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: python-app
-
-      - name: Unzip artifact for deployment
-        run: unzip release.zip
-
+          name: node-app
       
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_EEC80179427D4B83A815A81B1FFFE358 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_348AD9B46BF34173BA314BE12347E7AA }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_33732F853AFE4F169936C612367B171C }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_B32046321D9C45948A33645D6DDAD18E }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_45FA9B86032C4145A2569AF7C809F9B3 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_8EC2B080D6724107A3403C46E9CE15B5 }}
 
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
-          app-name: 'pixelExperts'
+          app-name: 'PixelExperts'
           slot-name: 'Production'
+          package: .
           
